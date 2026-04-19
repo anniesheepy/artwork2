@@ -64,7 +64,18 @@
     .btn-submit { background: #AAC568; color: #fff; border-bottom: 3px solid #8ba355; }
     .btn-submit:hover { background: #92ae50; transform: translateY(-1px); }
 
+    /* Overlays */
     #loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #393B3A; font-size: 18px; letter-spacing: 1px; }
+    
+    /* Blocked Overlay Styles from v1 */
+    #blocked-overlay { 
+      position: fixed; inset: 0; background: #fff; z-index: 1001; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      text-align: center; padding: 30px;
+    }
+    .blocked-content h2 { color: #AAC568; font-size: 32px; margin-bottom: 15px; }
+    .blocked-content p { font-size: 18px; color: #393B3A; max-width: 500px; margin-bottom: 25px; }
+
     .success-screen { text-align: center; padding: 40px 0; }
     .success-screen h2 { color: #AAC568; margin-bottom: 10px; font-size: 28px; }
   </style>
@@ -72,6 +83,15 @@
 <body>
 
 <div id="loading-overlay">LOADING ORDER DETAILS...</div>
+
+<div id="blocked-overlay" class="hidden">
+  <div class="blocked-content">
+    <img src="https://admartproducts.com/content/webimg/admart_new_aminate.svg" alt="ADmart Logo" style="height:60px; margin-bottom:30px;">
+    <h2>Response Already Received</h2>
+    <p>We've already received a response for this Art Approval Number. Your decision is currently being processed by our team.</p>
+    <p style="font-size: 14px; color: #888;">If you need to make changes, please contact <a href="mailto:art@admartproducts.com" style="color: #AAC568; font-weight: bold;">art@admartproducts.com</a></p>
+  </div>
+</div>
 
 <header class="site-header">
   <img src="https://admartproducts.com/content/webimg/admart_new_aminate.svg" alt="ADmart Logo">
@@ -163,6 +183,14 @@
         // Handle case where n8n returns an array or single object
         const item = Array.isArray(data) ? data[0] : data;
 
+        // TRIGGER BLOCKING OVERLAY LOGIC
+        // If status is "Approved" or "Need Revise", block the page
+        if (item.status === 'Approved' || item.status === 'Need Revise') {
+          document.getElementById('blocked-overlay').classList.remove('hidden');
+          document.getElementById('loading-overlay').classList.add('hidden');
+          return; // Stop further execution
+        }
+
         const jobEl = document.getElementById('info-job');
         const poEl = document.getElementById('info-po');
 
@@ -182,6 +210,8 @@
       })
       .catch(err => {
         console.error(err);
+        // Fallback: If server fails, we show the blocked overlay for safety (same as v1)
+        document.getElementById('blocked-overlay').classList.remove('hidden');
         document.getElementById('loading-overlay').innerHTML = '❌ Error: Could not connect to n8n server.';
       });
 
