@@ -67,7 +67,7 @@
     /* Overlays */
     #loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #393B3A; font-size: 18px; letter-spacing: 1px; }
     
-    /* Blocked Overlay Styles from v1 */
+    /* Blocked Overlay Styles */
     #blocked-overlay { 
       position: fixed; inset: 0; background: #fff; z-index: 1001; 
       display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -165,8 +165,8 @@
 </div>
 
 <script>
-  const N8N_GET_URL = 'https://admart-n8n.zeabur.app/webhook/get-order2';
-  const N8N_POST_URL = 'https://admart-n8n.zeabur.app/webhook/artwork-approval-submit/';
+  const N8N_GET_URL = 'https://n8n.admartproducts.com/webhook/get-order2';
+  const N8N_POST_URL = 'https://n8n.admartproducts.com/webhook/artwork-approval-submit';
 
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
@@ -177,25 +177,20 @@
       return;
     }
 
+    // 1. 獲取訂單資料
     fetch(`${N8N_GET_URL}?pid=${pid}`)
       .then(res => { if (!res.ok) throw new Error(); return res.json(); })
       .then(data => {
-        // Handle case where n8n returns an array or single object
         const item = Array.isArray(data) ? data[0] : data;
 
-        // TRIGGER BLOCKING OVERLAY LOGIC
-        // If status is "Approved" or "Need Revise", block the page
         if (item.status === 'Approved' || item.status === 'Need Revise') {
           document.getElementById('blocked-overlay').classList.remove('hidden');
           document.getElementById('loading-overlay').classList.add('hidden');
-          return; // Stop further execution
+          return;
         }
 
-        const jobEl = document.getElementById('info-job');
-        const poEl = document.getElementById('info-po');
-
-        if (jobEl) jobEl.textContent = item.order_number || '---';
-        if (poEl) poEl.textContent = item.po_number || '---';
+        document.getElementById('info-job').textContent = item.order_number || '---';
+        document.getElementById('info-po').textContent = item.po_number || '---';
         
         if (item.preview_image) {
           const img = document.getElementById('main-img');
@@ -210,21 +205,48 @@
       })
       .catch(err => {
         console.error(err);
-        // Fallback: If server fails, we show the blocked overlay for safety (same as v1)
         document.getElementById('blocked-overlay').classList.remove('hidden');
-        document.getElementById('loading-overlay').innerHTML = '❌ Error: Could not connect to n8n server.';
+        document.getElementById('loading-overlay').innerHTML = '❌ Error: Could not connect to server.';
       });
 
-    document.getElementById('approval-form').addEventListener('submit', function(e) {
+    // 2. 提交表單邏輯 (JSON + Base64 修正版)
+    document.getElementById('approval-form').addEventListener('submit', async function(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('submit-btn');
       submitBtn.disabled = true;
       submitBtn.textContent = 'SUBMITTING...';
 
-      const formData = new FormData(this);
-      formData.append('pid', pid);
+      const fileInput = this.querySelector('input[name="file_attachment"]');
+      let base64File = null;
+      let fileName = null;
 
-      fetch(N8N_POST_URL, { method: 'POST', body: formData })
+      // 如果有選擇檔案，轉換為 Base64
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName = file.name;
+        base64File = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // 構建 JSON 酬載
+      const payload = {
+        name: this.name.value,
+        email: this.email.value,
+        status: this.status.value,
+        change_details: this.change_details.value,
+        pid: pid,
+        file_data: base64File,
+        file_name: fileName
+      };
+
+      fetch(N8N_POST_URL, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload) 
+      })
       .then(res => {
         if (!res.ok) throw new Error('Submission failed');
         document.getElementById('approval-form').classList.add('hidden');
