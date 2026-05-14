@@ -6,7 +6,7 @@
   <title>Artwork Proof Approval | ADmart Products</title>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    /* 全域樣式保持不變 */
+    /* 1. 保留你所有的全域樣式 */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Source Sans Pro', sans-serif; background: #f5f5f5; color: #393B3A; line-height: 1.6; }
     .hidden { display: none !important; }
@@ -19,54 +19,61 @@
     .content-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; align-items: start; }
     @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
 
-    /* 卡片設計 */
+    /* 卡片與 Pills */
     .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; }
     .card-header { background: #393B3A; color: #fff; padding: 12px 20px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
     .card-body { padding: 25px; }
-
-    /* Pill 標籤 */
     .info-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 25px; }
-    .pill { background: #AAC568; color: #fff; padding: 6px 24px; border-radius: 4px; font-size: 22px; font-weight: 600; box-shadow: 0 3px 6px rgba(0,0,0,0.12); display: flex; align-items: center; }
-    .pill strong { margin-left: 8px; font-weight: 800; }
+    .pill { background: #AAC568; color: #f0f0f0; padding: 6px 24px; border-radius: 4px; font-size: 22px; font-weight: 600; box-shadow: 0 3px 6px rgba(0,0,0,0.12); display: flex; align-items: center; }
+    .pill strong { color: #ffffff; margin-left: 8px; font-weight: 800; text-shadow: 1px 1px 0px rgba(0,0,0,0.15); }
 
-    /* 預覽框 */
+    /* 預覽與表單 */
     .preview-box { background: #eee; border: 2px dashed #ccc; border-radius: 6px; min-height: 500px; display: flex; align-items: center; justify-content: center; position: relative; }
     .preview-box img { max-width: 100%; height: auto; display: block; border-radius: 4px; }
-    
-    /* 表單元件 */
     .form-group { margin-bottom: 18px; }
     label { display: block; font-weight: 700; font-size: 12px; margin-bottom: 6px; color: #666; text-transform: uppercase; }
     .form-control { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; font-family: inherit; }
-    .btn { display: block; width: 100%; padding: 15px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 15px; text-align: center; }
+    textarea.form-control { height: 110px; resize: vertical; }
+    .btn { display: block; width: 100%; padding: 15px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 15px; text-align: center; text-decoration: none; }
     .btn-submit { background: #AAC568; color: #fff; border-bottom: 3px solid #8ba355; }
 
-    /* Gatekeeper 樣式 (使用 #AAC568) */
+    /* Gatekeeper 門禁樣式 */
     #gatekeeper-overlay { position: fixed; inset: 0; background: #f9f9f9; z-index: 2000; display: flex; align-items: center; justify-content: center; }
     .auth-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); max-width: 400px; width: 90%; text-align: center; border-top: 8px solid #AAC568; }
     .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
-    .btn-verify { background: #AAC568; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: 800; cursor: pointer; }
+    .btn-verify { background: #AAC568; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
 
+    /* 原本的 Overlays */
+    #loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #393B3A; font-size: 18px; letter-spacing: 1px; }
     #blocked-overlay { position: fixed; inset: 0; background: #fff; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+    .blocked-content h2 { color: #AAC568; font-size: 32px; margin-bottom: 15px; }
+    .success-screen { text-align: center; padding: 40px 0; }
+    .success-screen h2 { color: #AAC568; margin-bottom: 10px; font-size: 28px; }
   </style>
 </head>
 <body>
+
+<div id="loading-overlay" class="hidden">LOADING ORDER DETAILS...</div>
 
 <div id="gatekeeper-overlay">
   <div class="auth-box">
     <img src="https://admartproducts.com/content/webimg/admart_new_aminate.svg" alt="ADmart Logo" style="height:45px; margin-bottom:20px;">
     <h2>Security Access</h2>
-    <p style="color:#777; margin-bottom:25px;">Please verify your PO and Job numbers.</p>
-    <input type="text" id="input_po" class="auth-input" placeholder="Hint: PO Number (e.g. 105824)">
-    <input type="text" id="input_job" class="auth-input" placeholder="Hint: Job Number (e.g. 737989)">
+    <p style="color:#777; font-size:14px; margin-bottom:25px;">Please verify your PO and Job numbers to unlock.</p>
+    <input type="text" id="input_po" class="auth-input" placeholder="Hint: Enter PO# (e.g. 105824)">
+    <input type="text" id="input_job" class="auth-input" placeholder="Hint: Enter Job# (e.g. 737989)">
     <button onclick="verifyAccess()" id="verify-btn" class="btn-verify">Unlock Artwork</button>
-    <p id="auth-error" style="color:red; margin-top:10px; font-weight:700; display:none;">❌ Invalid Numbers</p>
+    <p id="auth-error" style="color:red; margin-top:10px; font-weight:700; display:none;">❌ Invalid PO# or Job#</p>
   </div>
 </div>
 
 <div id="blocked-overlay" class="hidden">
-  <img src="https://admartproducts.com/content/webimg/admart_new_aminate.svg" alt="ADmart Logo" style="height:60px; margin-bottom:30px;">
-  <h2>Response Already Received</h2>
-  <p>We've already recorded a response for this item.</p>
+  <div class="blocked-content">
+    <img src="https://admartproducts.com/content/webimg/admart_new_aminate.svg" alt="ADmart Logo" style="height:60px; margin-bottom:30px;">
+    <h2>Response Already Received</h2>
+    <p>We've already received a response for this Art Approval Number. Your decision is currently being processed by our team.</p>
+    <p style="font-size: 14px; color: #888;">If you need to make changes, please contact <a href="mailto:art@admartproducts.com" style="color: #AAC568; font-weight: bold;">art@admartproducts.com</a></p>
+  </div>
 </div>
 
 <header class="site-header">
@@ -93,21 +100,20 @@
     <div class="card">
       <div class="card-header">✍️ Approval Decision</div>
       <div class="card-body">
-        <div id="success-screen" class="success-screen hidden" style="text-align: center; padding: 20px;">
-          <h2 style="color:#AAC568">✅ Submitted!</h2>
-          <p>Thank you. Your response has been recorded.</p>
+        <div id="success-screen" class="success-screen hidden">
+          <h2>✅ Submitted!</h2>
+          <p>Your response has been successfully recorded. Our team will review it shortly.</p>
         </div>
 
         <form id="approval-form">
           <div class="form-group">
             <label>Your Full Name *</label>
-            <input type="text" id="form_name" name="name" class="form-control" required placeholder="Enter your full name">
+            <input type="text" name="name" class="form-control" required placeholder="John Doe">
           </div>
           <div class="form-group">
             <label>Your Email Address *</label>
-            <input type="email" id="form_email" name="email" class="form-control" required placeholder="Enter your email">
+            <input type="email" name="email" class="form-control" required placeholder="john@example.com">
           </div>
-
           <div class="form-group">
             <label>Final Decision *</label>
             <select name="status" class="form-control" required onchange="handleStatusChange(this.value)">
@@ -118,7 +124,11 @@
           </div>
           <div id="changes-field" class="form-group hidden">
             <label>Description of Changes *</label>
-            <textarea name="change_details" id="change-textarea" class="form-control"></textarea>
+            <textarea name="change_details" id="change-textarea" class="form-control" placeholder="Please specify what needs to be fixed..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Upload Reference (Optional)</label>
+            <input type="file" name="file_attachment" class="form-control" style="padding: 8px;">
           </div>
           <button type="submit" id="submit-btn" class="btn btn-submit">Submit My Response</button>
         </form>
@@ -134,13 +144,16 @@
   const params = new URLSearchParams(window.location.search);
   const pid = params.get('pid');
 
-  // 1. 第一層驗證
+  // 1. Gatekeeper 驗證與原本的 Status Check
   async function verifyAccess() {
     const po = document.getElementById('input_po').value;
     const job = document.getElementById('input_job').value;
     const btn = document.getElementById('verify-btn');
-    
+    const err = document.getElementById('auth-error');
+
+    if(!pid) return alert("Missing PID.");
     if(!po || !job) return alert("Please enter both numbers.");
+
     btn.innerText = "VERIFYING...";
     btn.disabled = true;
 
@@ -153,72 +166,96 @@
       const result = await response.json();
 
       if (result.valid) {
+        // 驗證成功，立刻檢查狀態 (原本的 Status Check 邏輯)
+        const item = result.data;
+        if (item.status === 'Approved' || item.status === 'Need Revise') {
+          document.getElementById('blocked-overlay').classList.remove('hidden');
+          document.getElementById('gatekeeper-overlay').classList.add('hidden');
+          return;
+        }
+
+        // 狀態沒問題，填充頁面並解鎖
+        document.getElementById('info-job').textContent = item.order_number || '---';
+        document.getElementById('info-po').textContent = item.po_number || '---';
+        
+        if (item.preview_image) {
+          const img = document.getElementById('main-img');
+          img.src = item.preview_image;
+          img.classList.remove('hidden');
+          document.getElementById('placeholder').classList.add('hidden');
+        }
+        
         document.getElementById('gatekeeper-overlay').classList.add('hidden');
-        renderData(result.data); // 填充 Job#/PO# 與圖片
       } else {
-        document.getElementById('auth-error').style.display = 'block';
+        err.style.display = 'block';
         btn.innerText = "Unlock Artwork";
         btn.disabled = false;
       }
     } catch (e) {
-      alert("Connection error.");
+      alert("Error connecting to server.");
       btn.disabled = false;
     }
   }
 
-  // 2. 填充資料 (但不填充姓名 Email，留給客戶輸入)
-  function renderData(item) {
-    if (item.status === 'Approved' || item.status === 'Need Revise') {
-      document.getElementById('blocked-overlay').classList.remove('hidden');
-      return;
-    }
-    document.getElementById('info-job').textContent = item.order_number || '---';
-    document.getElementById('info-po').textContent = item.po_number || '---';
-    
-    if (item.preview_image) {
-      const img = document.getElementById('main-img');
-      img.src = item.preview_image;
-      img.classList.remove('hidden');
-      document.getElementById('placeholder').classList.add('hidden');
-    }
-  }
-
-  // 3. 提交表單 (傳送客戶輸入的姓名與 Email 到 Webhook)
+  // 2. 原本的表單提交 (含 Base64 檔案上傳功能)
   document.getElementById('approval-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const submitBtn = document.getElementById('submit-btn');
     submitBtn.disabled = true;
     submitBtn.textContent = 'SUBMITTING...';
 
+    const fileInput = this.querySelector('input[name="file_attachment"]');
+    let base64File = null;
+    let fileName = null;
+
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      fileName = file.name;
+      base64File = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+    }
+
     const payload = {
-      pid: pid,
-      name: this.name.value,         // 客戶手動輸入的姓名
-      email: this.email.value,       // 客戶手動輸入的 Email
+      name: this.name.value,
+      email: this.email.value,
       status: this.status.value,
       change_details: this.change_details.value,
-      job_number: document.getElementById('info-job').textContent,
-      po_number: document.getElementById('info-po').textContent
+      pid: pid,
+      file_data: base64File,
+      file_name: fileName
     };
 
-    try {
-      const res = await fetch(N8N_POST_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload) 
-      });
-      if (res.ok) {
-        document.getElementById('approval-form').classList.add('hidden');
-        document.getElementById('success-screen').classList.remove('hidden');
-      } else { throw new Error(); }
-    } catch (err) {
-      alert('Error submitting response.');
+    fetch(N8N_POST_URL, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload) 
+    })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      document.getElementById('approval-form').classList.add('hidden');
+      document.getElementById('success-screen').classList.remove('hidden');
+    })
+    .catch(err => {
+      alert('❌ Error submitting response.');
       submitBtn.disabled = false;
-    }
+      submitBtn.textContent = 'Submit My Response';
+    });
   });
 
+  // 3. 原本的欄位切換邏輯
   function handleStatusChange(val) {
-    const field = document.getElementById('changes-field');
-    val === 'Changes Requested' ? field.classList.remove('hidden') : field.classList.add('hidden');
+    const changesField = document.getElementById('changes-field');
+    const textarea = document.getElementById('change-textarea');
+    if (val === 'Changes Requested') {
+      changesField.classList.remove('hidden');
+      textarea.required = true;
+    } else {
+      changesField.classList.add('hidden');
+      textarea.required = false;
+    }
   }
 </script>
 
