@@ -4,13 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artwork Approval System | Admart Products</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        /* 1. 門禁視窗專屬樣式 - 使用 Admart 綠色色調 */
+        /* ==========================================
+           1. 使用你原本網頁定義的綠色色調 (#16a34a)
+           ========================================== */
+        :root {
+            --admart-green: #16a34a; /* 這是 bg-green-600 的標準顏色 */
+            --admart-green-hover: #15803d; /* 這是 bg-green-700 */
+        }
+
+        /* 門禁視窗樣式 */
         #gatekeeper {
             position: fixed;
             inset: 0;
-            background: #f8fafc; /* 淺灰色背景 */
+            background: #f1f5f9; 
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -20,153 +30,155 @@
         .auth-card {
             background: white;
             padding: 2.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            max-width: 400px;
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            max-width: 420px;
             width: 90%;
-            border-top: 6px solid #22c55e; /* Admart 綠色條 */
+            border-top: 6px solid var(--admart-green); /* 使用你的綠色 */
             text-align: center;
         }
 
         .admart-logo {
-            width: 180px;
+            width: 210px;
             margin: 0 auto 1.5rem;
         }
 
-        .input-field {
+        /* 輸入框樣式 */
+        .auth-input {
             width: 100%;
             padding: 0.75rem;
-            margin-top: 0.5rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .input-field:focus {
+            margin-top: 0.4rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.375rem;
             outline: none;
-            border-color: #22c55e;
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+        .auth-input:focus {
+            border-color: var(--admart-green);
+            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
         }
 
+        /* 按鈕樣式 - 使用你的綠色 */
         .btn-verify {
             width: 100%;
-            background-color: #22c55e;
+            background-color: var(--admart-green);
             color: white;
-            padding: 0.8rem;
-            border-radius: 0.5rem;
+            padding: 0.85rem;
+            border-radius: 0.375rem;
             font-weight: 700;
             margin-top: 1.5rem;
-            transition: background 0.3s;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .btn-verify:hover {
-            background-color: #16a34a;
+            background-color: var(--admart-green-hover);
         }
 
-        /* 2. 原始內容控制：驗證前隱藏 */
+        /* 控制主內容顯示 */
         #main-content { display: none; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100">
 
     <div id="gatekeeper">
         <div class="auth-card">
             <img src="https://admartproducts.com/content/webimg/admart_new_aminate_wbg_256.gif" alt="Admart Logo" class="admart-logo">
             
-            <h2 class="text-xl font-bold text-gray-800">Security Access</h2>
-            <p class="text-gray-500 text-sm mt-2">To view your artwork proof, please enter the order details found in your email.</p>
+            <h2 class="text-2xl font-bold text-gray-800">Security Check</h2>
+            <p class="text-gray-500 text-sm mt-2">To protect your privacy, please enter your PO and Job numbers to access the artwork proof.</p>
             
-            <div class="mt-6 text-left">
-                <label class="text-xs font-bold text-gray-600 uppercase">PO Number</label>
-                <input type="text" id="auth_po" class="input-field" placeholder="e.g. 105824">
+            <div class="mt-8 text-left">
+                <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">PO Number</label>
+                <input type="text" id="auth_po" class="auth-input" placeholder="e.g. 105824">
             </div>
             
             <div class="mt-4 text-left">
-                <label class="text-xs font-bold text-gray-600 uppercase">Job Number</label>
-                <input type="text" id="auth_job" class="input-field" placeholder="e.g. 737989">
+                <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">Job Number</label>
+                <input type="text" id="auth_job" class="auth-input" placeholder="e.g. 737989">
             </div>
 
             <button onclick="verifyAccess()" id="verify-btn" class="btn-verify">
-                Unlock Artwork
+                Unlock Proof
             </button>
             
-            <p id="error-msg" class="text-red-500 text-sm mt-4 hidden font-medium">
-                Invalid details. Please try again.
+            <p id="error-msg" class="text-red-600 text-sm mt-4 hidden font-bold">
+                Verification failed. Please check your numbers.
             </p>
         </div>
     </div>
 
-    <div id="main-content" class="container mx-auto py-10 px-4">
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-            <div class="bg-green-600 p-4 text-white">
-                <h2 class="text-xl font-bold">Artwork Approval: <span id="display-pid"></span></h2>
+    <div id="main-content" class="container mx-auto py-10 px-4 max-w-4xl">
+        <div class="bg-white shadow-2xl rounded-xl overflow-hidden">
+            
+            <div class="bg-green-600 p-5 text-white flex justify-between items-center">
+                <h1 class="text-2xl font-black tracking-tight">ARTWORK APPROVAL SYSTEM</h1>
+                <span id="display-pid" class="bg-green-800 px-3 py-1 rounded-full text-xs font-bold"></span>
             </div>
             
-            <div class="p-6">
-                <div class="mb-8 border-4 border-dashed border-gray-200 rounded-lg p-2 text-center">
-                    <img id="artwork-img" src="" alt="Artwork Proof" class="max-w-full mx-auto shadow-sm">
+            <div class="p-8">
+                <div class="mb-10 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-4 text-center">
+                    <img id="artwork-img" src="" alt="Artwork Proof" class="max-w-full mx-auto rounded shadow-lg">
                 </div>
 
-                <form id="approval-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form id="approval-form" class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 font-bold">Your Name</label>
-                            <input type="text" id="signer_name" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 bg-gray-50" readonly>
+                            <label class="block text-sm font-black text-gray-700 uppercase">Customer Name</label>
+                            <input type="text" id="signer_name" readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-3 bg-gray-100 font-bold text-gray-600">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 font-bold">Email Address</label>
-                            <input type="email" id="signer_email" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 bg-gray-50" readonly>
+                            <label class="block text-sm font-black text-gray-700 uppercase">Email Address</label>
+                            <input type="email" id="signer_email" readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-3 bg-gray-100 font-bold text-gray-600">
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <label class="block text-lg font-black text-gray-800 mb-4">PLEASE CHOOSE YOUR ACTION:</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-green-50 transition border-gray-200 has-[:checked]:border-green-600 has-[:checked]:bg-green-50">
+                                <input type="radio" name="status" value="Approved" checked class="w-5 h-5 text-green-600"> 
+                                <span class="ml-3 font-black text-green-800 text-lg uppercase">Approve Artwork</span>
+                            </label>
+                            <label class="relative flex items-center p-4 border-2 rounded-xl cursor-pointer hover:bg-red-50 transition border-gray-200 has-[:checked]:border-red-600 has-[:checked]:bg-red-50">
+                                <input type="radio" name="status" value="Changes Requested" class="w-5 h-5 text-red-600"> 
+                                <span class="ml-3 font-black text-red-800 text-lg uppercase">Request Changes</span>
+                            </label>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Decision</label>
-                        <div class="flex gap-4">
-                            <label class="flex-1 border p-4 rounded-lg cursor-pointer hover:bg-green-50 transition border-green-200">
-                                <input type="radio" name="status" value="Approved" checked class="mr-2"> 
-                                <span class="font-bold text-green-700">Approve</span>
-                            </label>
-                            <label class="flex-1 border p-4 rounded-lg cursor-pointer hover:bg-red-50 transition border-red-200">
-                                <input type="radio" name="status" value="Changes Requested" class="mr-2"> 
-                                <span class="font-bold text-red-700">Request Changes</span>
-                            </label>
-                        </div>
+                        <label class="block text-sm font-black text-gray-700 uppercase mb-2">Comments / Required Revisions</label>
+                        <textarea id="comments" rows="5" class="mt-1 block w-full border-2 border-gray-200 rounded-md shadow-sm p-4 focus:border-green-600 focus:ring-0" placeholder="If you requested changes, please describe them here..."></textarea>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 font-bold">Comments / Change Details</label>
-                        <textarea id="comments" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea>
-                    </div>
-
-                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">
-                        Submit My Response
+                    <button type="submit" class="w-full bg-green-600 text-white py-5 rounded-xl font-black text-2xl hover:bg-green-700 transition-all shadow-xl hover:shadow-green-200 transform hover:-translate-y-1 uppercase tracking-widest">
+                        Submit Response
                     </button>
                 </form>
             </div>
         </div>
+        
+        <p class="text-center text-gray-400 mt-8 text-sm">© Admart Products - Artwork Approval Portal</p>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const pid = urlParams.get('pid');
 
-        // 核心驗證邏輯
+        // 門禁驗證
         async function verifyAccess() {
             const po = document.getElementById('auth_po').value;
             const job = document.getElementById('auth_job').value;
             const btn = document.getElementById('verify-btn');
             const errMsg = document.getElementById('error-msg');
 
-            if (!po || !job) {
-                alert("Please enter both PO and Job numbers.");
-                return;
-            }
+            if (!po || !job) return alert("Please enter both numbers.");
 
-            btn.innerText = "Processing...";
+            btn.innerText = "VERIFYING...";
             btn.disabled = true;
 
             try {
-                // 這裡請換成你新的 n8n Webhook URL (POST 方法)
                 const response = await fetch('https://n8n.admartproducts.com/webhook/verify-artwork-access', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -176,24 +188,20 @@
                 const result = await response.json();
 
                 if (result.valid) {
-                    // 1. 移除門禁視窗
                     document.getElementById('gatekeeper').style.display = 'none';
-                    // 2. 顯示原本內容
                     document.getElementById('main-content').style.display = 'block';
                     
-                    // 3. 從 n8n 帶回真實資料填充
-                    document.getElementById('display-pid').innerText = pid;
+                    document.getElementById('display-pid').innerText = "PODIO ID: " + pid;
                     document.getElementById('artwork-img').src = result.data.file_url;
                     document.getElementById('signer_name').value = result.data.name;
                     document.getElementById('signer_email').value = result.data.email;
                 } else {
                     errMsg.classList.remove('hidden');
-                    btn.innerText = "Unlock Artwork";
+                    btn.innerText = "Unlock Proof";
                     btn.disabled = false;
                 }
             } catch (error) {
-                console.error(error);
-                alert("Verification service unavailable. Please check n8n workflow.");
+                alert("Connection failed.");
                 btn.disabled = false;
             }
         }
@@ -216,9 +224,9 @@
             });
 
             if (res.ok) {
-                alert('Success! Your response has been sent to Admart.');
+                alert('Success! Your response has been recorded.');
             } else {
-                alert('Submission failed.');
+                alert('Error submitting response.');
             }
         };
     </script>
