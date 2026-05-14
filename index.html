@@ -6,9 +6,7 @@
   <title>Artwork Proof Approval | ADmart Products</title>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    /* ==========================================
-       1. 全域樣式與你原本的設計
-       ========================================== */
+    /* 保持你原本的所有 CSS 樣式 */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Source Sans Pro', sans-serif; background: #f5f5f5; color: #393B3A; line-height: 1.6; }
     .hidden { display: none !important; }
@@ -39,25 +37,13 @@
     .btn { display: block; width: 100%; padding: 15px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 15px; text-align: center; text-decoration: none; }
     .btn-submit { background: #AAC568; color: #fff; border-bottom: 3px solid #8ba355; }
 
-    /* ==========================================
-       2. Gatekeeper 門禁樣式 (使用 #AAC568)
-       ========================================== */
-    #gatekeeper-overlay {
-      position: fixed; inset: 0; background: #f9f9f9; z-index: 2000;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .auth-box {
-      background: white; padding: 40px; border-radius: 12px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.1); max-width: 400px; width: 90%;
-      text-align: center; border-top: 8px solid #AAC568;
-    }
-    .auth-box h2 { color: #393B3A; margin-bottom: 10px; font-weight: 800; }
-    .auth-box p { color: #777; font-size: 14px; margin-bottom: 25px; }
+    /* Gatekeeper 樣式 */
+    #gatekeeper-overlay { position: fixed; inset: 0; background: #f9f9f9; z-index: 2000; display: flex; align-items: center; justify-content: center; }
+    .auth-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); max-width: 400px; width: 90%; text-align: center; border-top: 8px solid #AAC568; }
     .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
     .auth-input:focus { border-color: #AAC568; outline: none; }
     .btn-verify { background: #AAC568; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
 
-    #loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #393B3A; font-size: 18px; }
     #blocked-overlay { position: fixed; inset: 0; background: #fff; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
   </style>
 </head>
@@ -66,22 +52,22 @@
 <div id="gatekeeper-overlay">
   <div class="auth-box">
     <img src="https://admartproducts.com/content/webimg/admart_new_aminate.svg" alt="ADmart Logo" style="height:45px; margin-bottom:20px;">
-    <h2>Security Access</h2>
-    <p>Please enter the details from your email to view the artwork proof.</p>
-    <input type="text" id="input_po" class="auth-input" placeholder="PO Number">
-    <input type="text" id="input_job" class="auth-input" placeholder="Job Number">
+    <h2 style="margin-bottom:10px;">Security Access</h2>
+    <p style="color:#777; font-size:14px; margin-bottom:25px;">Please verify your identity to view the artwork.</p>
+    
+    <input type="text" id="input_po" class="auth-input" placeholder="Enter PO Number (e.g. 105824)">
+    <input type="text" id="input_job" class="auth-input" placeholder="Enter Job Number (e.g. 737989)">
+    
     <button onclick="verifyAccess()" id="verify-btn" class="btn-verify">Unlock Artwork</button>
-    <p id="auth-error" style="color:red; margin-top:10px; font-weight:700; display:none;">Invalid PO# or Job#</p>
+    <p id="auth-error" style="color:red; margin-top:10px; font-weight:700; display:none;">❌ Invalid PO# or Job#</p>
   </div>
 </div>
-
-<div id="loading-overlay" class="hidden">LOADING ORDER DETAILS...</div>
 
 <div id="blocked-overlay" class="hidden">
   <div class="blocked-content">
     <img src="https://admartproducts.com/content/webimg/admart_new_aminate.svg" alt="ADmart Logo" style="height:60px; margin-bottom:30px;">
     <h2>Response Already Received</h2>
-    <p>We've already received a response for this Art Approval Number.</p>
+    <p>We've already received a response for this request.</p>
   </div>
 </div>
 
@@ -101,7 +87,7 @@
         </div>
         <div class="preview-box">
           <img id="main-img" src="" alt="Proof Preview" class="hidden">
-          <p id="placeholder">Fetching artwork from server...</p>
+          <p id="placeholder">Waiting for security clearance...</p>
         </div>
       </div>
     </div>
@@ -111,17 +97,17 @@
       <div class="card-body">
         <div id="success-screen" class="success-screen hidden">
           <h2 style="color:#AAC568">✅ Submitted!</h2>
-          <p>Your response has been recorded successfully.</p>
+          <p>Thank you. Your response has been recorded.</p>
         </div>
 
         <form id="approval-form">
           <div class="form-group">
             <label>Your Full Name *</label>
-            <input type="text" id="form_name" name="name" class="form-control" required placeholder="John Doe">
+            <input type="text" id="form_name" name="name" class="form-control" required readonly>
           </div>
           <div class="form-group">
             <label>Your Email Address *</label>
-            <input type="email" id="form_email" name="email" class="form-control" required placeholder="john@example.com">
+            <input type="email" id="form_email" name="email" class="form-control" required readonly>
           </div>
           <div class="form-group">
             <label>Final Decision *</label>
@@ -149,7 +135,7 @@
   const params = new URLSearchParams(window.location.search);
   const pid = params.get('pid');
 
-  // 門禁驗證函數
+  // 1. 門禁驗證
   async function verifyAccess() {
     const po = document.getElementById('input_po').value;
     const job = document.getElementById('input_job').value;
@@ -170,8 +156,9 @@
       const result = await response.json();
 
       if (result.valid) {
+        // 驗證成功：隱藏門禁
         document.getElementById('gatekeeper-overlay').classList.add('hidden');
-        // 驗證成功後，開始執行你原本的資料載入邏輯
+        // 【關鍵修復】: 觸發內容填充函數，並將 n8n 回傳的 data 傳進去
         loadOriginalContent(result.data);
       } else {
         err.style.display = 'block';
@@ -179,34 +166,39 @@
         btn.disabled = false;
       }
     } catch (e) {
-      alert("System error. Please try again.");
+      alert("System error. Please contact art@admartproducts.com");
       btn.disabled = false;
     }
   }
 
-  // 載入原本的內容 (由 n8n 回傳的資料填充)
+  // 2. 填充頁面內容 (這就是你說的觸發抓取資訊的部分)
   function loadOriginalContent(data) {
-    // 1. 檢查狀態是否已核准 (你原本的邏輯)
+    // 檢查是否已經審核過 (重複提交檢查)
     if (data.status === 'Approved' || data.status === 'Need Revise') {
       document.getElementById('blocked-overlay').classList.remove('hidden');
       return;
     }
 
-    // 2. 填充資料 (使用 n8n 驗證後回傳的安全資料)
+    // 填充 Pill 資訊
     document.getElementById('info-job').textContent = data.order_number || '---';
     document.getElementById('info-po').textContent = data.po_number || '---';
+    
+    // 填充表單
     document.getElementById('form_name').value = data.name || '';
     document.getElementById('form_email').value = data.email || '';
     
+    // 顯示圖片
     if (data.preview_image) {
       const img = document.getElementById('main-img');
       img.src = data.preview_image;
       img.classList.remove('hidden');
       document.getElementById('placeholder').classList.add('hidden');
+    } else {
+      document.getElementById('placeholder').textContent = 'Artwork preview not available.';
     }
   }
 
-  // 原本的表單提交邏輯
+  // 3. 表單提交
   document.getElementById('approval-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const submitBtn = document.getElementById('submit-btn');
@@ -221,20 +213,20 @@
       pid: pid
     };
 
-    fetch(N8N_POST_URL, { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload) 
-    })
-    .then(res => {
+    try {
+      const res = await fetch(N8N_POST_URL, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload) 
+      });
       if (!res.ok) throw new Error();
       document.getElementById('approval-form').classList.add('hidden');
       document.getElementById('success-screen').classList.remove('hidden');
-    })
-    .catch(() => {
+    } catch (err) {
       alert('Error submitting response.');
       submitBtn.disabled = false;
-    });
+      submitBtn.textContent = 'Submit My Response';
+    }
   });
 
   function handleStatusChange(val) {
